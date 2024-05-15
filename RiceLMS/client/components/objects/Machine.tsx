@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet,TextInput } from 'react-native';
 
 interface CustomMachineProps {
@@ -8,6 +8,9 @@ interface CustomMachineProps {
 const Machine: React.FC<CustomMachineProps> = ({title}) => {
   const [expanded, setExpanded] = useState(false);
   const [time, setTime] = useState('');
+  const [countdown, setCountdown] = useState(0);
+  const [countdownActive, setCountdownActive] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout>();
   const handleSubmit = () => {
     const isValidInteger = /^\d+$/.test(time);
     if (!isValidInteger){
@@ -15,7 +18,9 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
     }
     else{
       const enteredTime = parseInt(time, 10); // Convert input to an integer
-      console.log(enteredTime);
+      setCountdown(enteredTime * 60); // Convert minutes to seconds
+      setCountdownActive(true);
+      setTime(''); // Clear input field
     }
   };
   const toggleMachine = () => {
@@ -24,6 +29,25 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
   const handleTimeChange = (text: string) => {
     setTime(text);
   };
+  const handleUndo = () => {
+    clearInterval(intervalRef.current); // Clear the interval
+    setCountdown(0);
+    setCountdownActive(false);
+  };
+
+  useEffect(()=>{
+
+    if(countdownActive && countdown>0){
+      intervalRef.current = setInterval(() => {
+        setCountdown(prevCountdown => prevCountdown - 1);
+        if(countdown==0){
+          clearInterval(intervalRef.current);
+          setCountdownActive(false);
+        }
+      }, 1000);
+    }
+    return () => clearInterval(intervalRef.current);
+  },[countdownActive,countdown])
 
   return (
     <View style={styles.container}>
@@ -32,6 +56,8 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
       </TouchableOpacity>
       {expanded && (
         <View style={styles.content}>
+        {!countdownActive ?(
+        <View>
         <TextInput
           style={styles.input}
           placeholder="Machine Runtime (mins)"
@@ -44,6 +70,25 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
         <Text style={styles.buttonText}>Submit</Text>
       </TouchableOpacity>
       </View>
+      ):(<View>
+        {countdown === 0 ? (
+          <TouchableOpacity onPress={handleUndo} style={styles.completeButton}>
+            <Text style={styles.completeButtonText}>Complete</Text>
+          </TouchableOpacity>
+        ) : (
+          <View>
+            <Text style={styles.countdownText}>
+              {Math.floor(countdown / 60)}:{countdown % 60 < 10 ? '0' : ''}
+              {countdown % 60}
+            </Text>
+            <TouchableOpacity onPress={handleUndo} style={styles.undoButton}>
+              <Text style={styles.undoButtonText}>Undo</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    )}
+  </View>
       )}
     </View>
   );
@@ -85,6 +130,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  countdownText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  undoButton: {
+    marginTop: 10,
+    backgroundColor: 'red',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  undoButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  completeButton: {
+    marginTop: 10,
+    backgroundColor: 'red',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  completeButtonText: {
     color: 'white',
     fontWeight: 'bold',
   },
