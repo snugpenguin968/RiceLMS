@@ -36,7 +36,6 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
   };
 
   useEffect(()=>{
-
     if(countdownActive && countdown>0){
       intervalRef.current = setInterval(() => {
         setCountdown(prevCountdown => prevCountdown - 1);
@@ -72,9 +71,14 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
       </View>
       ):(<View>
         {countdown === 0 ? (
+          <View>
+            <Text style={styles.countdownText}>
+            {0}:{0}{0}
+            </Text>
           <TouchableOpacity onPress={handleUndo} style={styles.completeButton}>
             <Text style={styles.completeButtonText}>Complete</Text>
           </TouchableOpacity>
+          </View>
         ) : (
           <View>
             <Text style={styles.countdownText}>
