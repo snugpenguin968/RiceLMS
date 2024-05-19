@@ -1,25 +1,50 @@
 import React from 'react'
 import { Stack } from 'expo-router';
-import { View, Button, Modal, Text } from 'react-native';
+import { View, Button, Modal, Text,StyleSheet } from 'react-native';
 import { useAuth, AuthProvider } from '../components/objects/AuthContext';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
-import TabLayout from './(tabs)/_layout';
 
-export default function AppContainer(){
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
+const AuthScreens = () => (
+  <View style={styles.container}>
+    <Text style={styles.titleText}>
+      Rice Laundry Management System
+    </Text>
+    <View>
+      <LoginScreen />
+      <RegisterScreen />
+    </View>
+  </View>
+);
+
+const AppContent = () => (
+  <Stack>
+    <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
+  </Stack>
+);
+
+const AppLayout = () => {
+  const { isLoggedIn } = useAuth();
+  return isLoggedIn ? <AppContent /> : <AuthScreens />;
 };
 
-const AppContent = () => {
+export default function App() {
   return (
     <AuthProvider>
-      <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      <AppLayout />
     </AuthProvider>
   );
 }
+
+
+const styles = StyleSheet.create({
+  titleText:{
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+  },
+});
