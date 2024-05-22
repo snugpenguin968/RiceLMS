@@ -4,9 +4,10 @@ import { useAuth } from '../../components/objects/AuthContext';
 
 export default function Settings() {
   const { logout } = useAuth();
-
+  const {username}=useAuth();
   return (
     <View style={styles.container}>
+      <Text style={styles.text}>Hello, {username}</Text>
       <TouchableOpacity onPress={logout} style={styles.logout}>
             <Text style={styles.logoutButtonText}>Logout</Text>
       </TouchableOpacity>
@@ -31,5 +32,10 @@ const styles = StyleSheet.create({
   logoutButtonText:{
     color: 'white',
     fontWeight: 'bold',
+  },
+  text:{
+    marginBottom:50,
+    fontWeight:'bold',
+    fontSize:30
   }
 });

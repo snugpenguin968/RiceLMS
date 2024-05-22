@@ -3,7 +3,6 @@ import { Stack } from 'expo-router';
 import { View, Button, Modal, Text,StyleSheet } from 'react-native';
 import { useAuth, AuthProvider } from '../components/objects/AuthContext';
 import LoginScreen from './LoginScreen';
-import RegisterScreen from './RegisterScreen';
 
 const AuthScreens = () => (
   <View style={styles.container}>
@@ -12,7 +11,6 @@ const AuthScreens = () => (
     </Text>
     <View>
       <LoginScreen />
-      <RegisterScreen />
     </View>
   </View>
 );

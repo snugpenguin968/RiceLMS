@@ -1,47 +1,69 @@
-// AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState,ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type AuthContextType = {
+interface AuthContextProps {
   isLoggedIn: boolean;
-  login: () => void;
+  username: string | null;
+  password: string | null;
+  login: (username: string, password: string) => void;
+  register: (username: string, password: string) => void;
   logout: () => void;
-};
- interface AuthProviderProps{
-    children: ReactNode;
- }
+}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const [password, setPassword] = useState<string | null>(null);
 
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      const storedLoginStatus = await AsyncStorage.getItem('isLoggedIn');
-      if (storedLoginStatus === 'true') {
-        setIsLoggedIn(true);
-      }
-    };
-
-    checkLoginStatus();
-  }, []);
-
-  const login = async () => {
+  const login = async (user: string, pass: string) => {
+    // This is a placeholder for real login logic
+    // Here you would typically check the username and password with a server
+    setUsername(user);
+    setPassword(pass);
     setIsLoggedIn(true);
+
+    // Save the state to AsyncStorage
     await AsyncStorage.setItem('isLoggedIn', 'true');
+    await AsyncStorage.setItem('username', user);
+    await AsyncStorage.setItem('password', pass);
+  };
+
+  const register = async (user: string, pass: string) => {
+    // This is a placeholder for real registration logic
+    // Here you would typically send the username and password to a server to create an account
+    setUsername(user);
+    setPassword(pass);
+    setIsLoggedIn(true);
+
+    // Save the state to AsyncStorage
+    await AsyncStorage.setItem('isLoggedIn', 'true');
+    await AsyncStorage.setItem('username', user);
+    await AsyncStorage.setItem('password', pass);
   };
 
   const logout = async () => {
+    setUsername(null);
+    setPassword(null);
     setIsLoggedIn(false);
+
+    // Remove the state from AsyncStorage
     await AsyncStorage.removeItem('isLoggedIn');
+    await AsyncStorage.removeItem('username');
+    await AsyncStorage.removeItem('password');
   };
 
-  return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    isLoggedIn,
+    username,
+    password,
+    login,
+    register,
+    logout,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
