@@ -8,9 +8,12 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
-func TestConnection() {
+var db *sql.DB
+
+func InitializeConnection() {
 
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file:", err)
@@ -31,11 +34,11 @@ func TestConnection() {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		host, port, user, password, dbname, sslmode)
 	// Open a connection to the database
-	db, err := sql.Open("postgres", connStr)
+	var err error
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error connecting to the database:", err)
 	}
-	defer db.Close()
 
 	// Test the connection
 	err = db.Ping()
@@ -44,25 +47,26 @@ func TestConnection() {
 	}
 	fmt.Println("Successfully connected to the database!")
 
-	// Query the database
-	rows, err := db.Query("SELECT username, password FROM users")
+}
+
+func CheckCredentials(Username, Password string) (bool, error) {
+	var storedPassword string
+	err := db.QueryRow("SELECT password FROM users WHERE username=$1", Username).Scan(&storedPassword)
 	if err != nil {
-		log.Fatal("Error querying the database:", err)
-	}
-	defer rows.Close()
-
-	// Iterate over the query results
-	for rows.Next() {
-		var username, password string
-		err := rows.Scan(&username, &password)
-		if err != nil {
-			log.Fatal("Error scanning row:", err)
+		if err == sql.ErrNoRows {
+			// Username not found
+			return false, nil
 		}
-		fmt.Printf("Username: %s, Password: %s\n", username, password)
+		// Other error
+		return false, err
 	}
 
-	// Check for errors during row iteration
-	if err := rows.Err(); err != nil {
-		log.Fatal("Error during row iteration:", err)
+	// Compare the provided password with the stored hashed password
+	if err := bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(Password)); err != nil {
+		// Password does not match
+		return false, nil
 	}
+
+	// Username and password match
+	return true, nil
 }
