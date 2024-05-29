@@ -105,3 +105,34 @@ export const useAuth = () => {
   }
   return context;
 };
+
+// Axios interceptor to handle token refresh
+axios.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = await SecureStore.getItemAsync('refreshToken');
+      if (refreshToken) {
+        try {
+          const response = await axios.post('http://localhost:8000/refresh', { token: refreshToken });
+          const { token, newRefreshToken } = response.data;
+          await SecureStore.setItemAsync('token', token);
+          await SecureStore.setItemAsync('refreshToken', newRefreshToken);
+          axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+          originalRequest.headers['Authorization'] = 'Bearer ' + token;
+          return axios(originalRequest);
+        } catch (err) {
+          console.error('Token refresh failed:', err);
+          // Call the logout function from AuthContext to clear the token and reset state
+          const { logout } = useAuth();
+          await logout();
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
