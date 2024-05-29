@@ -9,7 +9,7 @@ import (
 
 func main() {
 	repository.InitializeConnection()
-	auth.InitializeDB()
+	auth.InitializeKey()
 	http.HandleFunc("/login", auth.LoginHandler)
 	http.HandleFunc("/refresh", auth.RefreshHandler)
 

@@ -24,7 +24,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func InitializeDB() {
+func InitializeKey() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file:", err)
 	}
@@ -103,7 +103,6 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Token is not yet expired", http.StatusBadRequest)
 		return
 	}
-
 	expirationTime := time.Now().Add(15 * time.Minute)
 	claims.ExpiresAt = jwt.NewNumericDate(expirationTime)
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
