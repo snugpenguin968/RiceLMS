@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtKey []byte
@@ -103,7 +104,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Token is not yet expired", http.StatusBadRequest)
 		return
 	}
-	expirationTime := time.Now().Add(15 * time.Minute)
+	expirationTime := time.Now().Add(24 * time.Hour)
 	claims.ExpiresAt = jwt.NewNumericDate(expirationTime)
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	newTokenStr, err := newToken.SignedString(jwtKey)
@@ -115,4 +116,75 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	response := map[string]string{"token": newTokenStr}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	var creds Credentials
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	//Ensure username is unique
+	userExists, err := repository.CheckExistingUser(creds.Username)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	if userExists {
+		http.Error(w, "Username already exists", http.StatusBadRequest)
+		return
+	}
+
+	//Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "Error hashing password", http.StatusInternalServerError)
+		return
+	}
+
+	//Insert new user into DB
+	err = repository.InsertUser(creds.Username, string(hashedPassword))
+	if err != nil {
+		http.Error(w, "Error inserting user", http.StatusInternalServerError)
+		return
+	}
+
+	// Generate JWT tokens
+	expirationTime := time.Now().Add(15 * time.Minute)
+	claims := &Claims{
+		Username: creds.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(jwtKey)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
+
+	refreshExpirationTime := time.Now().Add(24 * time.Hour)
+	refreshClaims := &Claims{
+		Username: creds.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(refreshExpirationTime),
+		},
+	}
+
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	refreshTokenString, err := refreshToken.SignedString(jwtKey)
+	if err != nil {
+		http.Error(w, "Error generating refresh token", http.StatusInternalServerError)
+		return
+	}
+
+	// Return the tokens to the client
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"token":        tokenString,
+		"refreshToken": refreshTokenString,
+	})
 }

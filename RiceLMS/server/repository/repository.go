@@ -70,3 +70,19 @@ func CheckCredentials(Username, Password string) (bool, error) {
 	// Username and password match
 	return true, nil
 }
+
+func CheckExistingUser(Username string) (bool, error) {
+	var existingUser string
+	err := db.QueryRow("SELECT username FROM users WHERE username=$1", Username).Scan(&existingUser)
+	if err == nil {
+		return true, nil
+	} else if err != sql.ErrNoRows {
+		return true, err
+	}
+	return false, nil
+}
+
+func InsertUser(Username, Password string) error {
+	_, err := db.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", Username, Password)
+	return err
+}

@@ -4,7 +4,7 @@ import { useAuth } from '../components/objects/AuthContext';
 import { useState } from 'react';
 
 const LoginScreen = () => {
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -13,6 +13,12 @@ const LoginScreen = () => {
       login(username, password);
     }
   };
+
+ const handleRegister= () =>{
+  if (username && password){
+    register(username, password);
+  }
+ }
 
   return (
     <View>
@@ -34,7 +40,7 @@ const LoginScreen = () => {
     <TouchableOpacity onPress={handleLogin} style={styles.login}>
       <Text style={styles.loginButtonText}>Login</Text>
     </TouchableOpacity>
-    <TouchableOpacity onPress={() => {/* registration logic */}} style={styles.register}>
+    <TouchableOpacity onPress={() => {handleRegister}} style={styles.register}>
       <Text style={styles.registerButtonText}>Register</Text>
     </TouchableOpacity>
     </View>
