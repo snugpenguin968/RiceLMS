@@ -60,7 +60,6 @@ func CheckCredentials(Username, Password string) (bool, error) {
 		// Other error
 		return false, err
 	}
-
 	// Compare the provided password with the stored hashed password
 	if err := bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(Password)); err != nil {
 		// Password does not match
