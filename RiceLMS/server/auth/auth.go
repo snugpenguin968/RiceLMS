@@ -41,14 +41,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	isAuthorized, err := repository.CheckCredentials(creds.Username, creds.Password)
-	if !isAuthorized {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
+	//issue has to deal with err
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !isAuthorized && err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
