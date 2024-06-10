@@ -12,5 +12,6 @@ func main() {
 	auth.InitializeKey()
 	http.HandleFunc("/login", auth.LoginHandler)
 	http.HandleFunc("/refresh", auth.RefreshHandler)
+	http.HandleFunc("/register", auth.RegisterHandler)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
