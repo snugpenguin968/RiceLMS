@@ -40,7 +40,7 @@ const LoginScreen = () => {
     <TouchableOpacity onPress={handleLogin} style={styles.login}>
       <Text style={styles.loginButtonText}>Login</Text>
     </TouchableOpacity>
-    <TouchableOpacity onPress={() => {handleRegister}} style={styles.register}>
+    <TouchableOpacity onPress={handleRegister} style={styles.register}>
       <Text style={styles.registerButtonText}>Register</Text>
     </TouchableOpacity>
     </View>

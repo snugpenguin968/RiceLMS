@@ -42,6 +42,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	isAuthorized, err := repository.CheckCredentials(creds.Username, creds.Password)
 	fmt.Println(err)
 	//issue has to deal with err

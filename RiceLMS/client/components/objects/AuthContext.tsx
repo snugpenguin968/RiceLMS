@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
+import { Alert } from 'react-native';
 
 interface AuthContextProps {
   isLoggedIn: boolean;
@@ -46,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!refreshToken) return;
 
     try{
-      const response=await axios.post('http://localhost:8000/refresh', { token: refreshToken });
+      const response=await axios.post('https://7add-12-47-18-60.ngrok-free.app/refresh', { token: refreshToken });
       const {token, newRefreshToken}=response.data;
       await saveToken(token, newRefreshToken, username as string);
     }
@@ -59,25 +60,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:8000/login', { username, password });
+      const response = await axios.post('https://7add-12-47-18-60.ngrok-free.app/login', { username, password },{
+        headers: {
+          'Content-Type': 'application/json'
+        }});
       const { token, refreshToken } = response.data;
       await saveToken(token, refreshToken, username);
       setUsername(username);
       setIsLoggedIn(true);
     } catch (error) {
-      console.error('Login failed:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 401) {
+          Alert.alert('Login Failed', 'Invalid username or password');
+        } else {
+          Alert.alert('Login Failed', 'An unexpected error occurred. Please try again.');
+        }
+      } else {
+        console.error('Login failed:', error);
+        Alert.alert('Login Failed', 'An unexpected error occurred. Please try again.');
+      }
     }
   };
 
   const register = async (username: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:8000/register', { username, password });
+      const response = await axios.post('https://7add-12-47-18-60.ngrok-free.app/register', { username, password },{
+        headers: {
+          'Content-Type': 'application/json'
+        }});
       const { token, refreshToken } = response.data;
       await saveToken(token, refreshToken, username);
       setUsername(username);
       setIsLoggedIn(true);
     } catch (error) {
-      console.error('Registration failed:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 401) {
+          Alert.alert('Login Failed', 'Invalid username or password');
+        } else {
+          Alert.alert('Login Failed', 'An unexpected error occurred. Please try again.');
+        }
+      } else {
+        console.error('Login failed:', error);
+        Alert.alert('Login Failed', 'An unexpected error occurred. Please try again.');
+      }
     }
   };
 
@@ -117,7 +142,7 @@ axios.interceptors.response.use(
       const refreshToken = await SecureStore.getItemAsync('refreshToken');
       if (refreshToken) {
         try {
-          const response = await axios.post('http://localhost:8000/refresh', { token: refreshToken });
+          const response = await axios.post('${NGROK_URL}/refresh', { token: refreshToken });
           const { token, newRefreshToken } = response.data;
           await SecureStore.setItemAsync('token', token);
           await SecureStore.setItemAsync('refreshToken', newRefreshToken);
