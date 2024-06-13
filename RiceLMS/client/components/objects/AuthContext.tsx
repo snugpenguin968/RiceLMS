@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!refreshToken) return;
 
     try{
-      const response=await axios.post('https://7add-12-47-18-60.ngrok-free.app/refresh', { token: refreshToken });
+      const response=await axios.post('https://mongrel-allowing-neatly.ngrok-free.app/refresh', { token: refreshToken });
       const {token, newRefreshToken}=response.data;
       await saveToken(token, newRefreshToken, username as string);
     }
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post('https://7add-12-47-18-60.ngrok-free.app/login', { username, password },{
+      const response = await axios.post('https://mongrel-allowing-neatly.ngrok-free.app/login', { username, password },{
         headers: {
           'Content-Type': 'application/json'
         }});
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (username: string, password: string) => {
     try {
-      const response = await axios.post('https://7add-12-47-18-60.ngrok-free.app/register', { username, password },{
+      const response = await axios.post('https://mongrel-allowing-neatly.ngrok-free.app/register', { username, password },{
         headers: {
           'Content-Type': 'application/json'
         }});
