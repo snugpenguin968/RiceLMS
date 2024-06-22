@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"server/auth"
+	"server/machine"
 	"server/repository"
 
 	"github.com/gorilla/mux"
@@ -18,7 +19,8 @@ func main() {
 	router.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 	router.HandleFunc("/refresh", auth.RefreshHandler).Methods("POST")
 	router.HandleFunc("/register", auth.RegisterHandler).Methods("POST")
-
+	router.HandleFunc("/retrieveData", auth.Adapt(auth.AuthMiddleware(http.HandlerFunc(machine.RetrieveDataHandler)))).Methods("GET")
+	router.HandleFunc("/startMachine", machine.StartMachineHandler).Methods("POST")
 	// Apply CORS middleware
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"}, // allows all origins

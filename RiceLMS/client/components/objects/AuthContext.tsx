@@ -142,7 +142,7 @@ axios.interceptors.response.use(
       const refreshToken = await SecureStore.getItemAsync('refreshToken');
       if (refreshToken) {
         try {
-          const response = await axios.post('${NGROK_URL}/refresh', { token: refreshToken });
+          const response = await axios.post('$https://mongrel-allowing-neatly.ngrok-free.app/refresh', { token: refreshToken });
           const { token, newRefreshToken } = response.data;
           await SecureStore.setItemAsync('token', token);
           await SecureStore.setItemAsync('refreshToken', newRefreshToken);
