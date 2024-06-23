@@ -2,7 +2,10 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"server/constants"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -75,6 +78,50 @@ func AddMachineData(svc *dynamodb.Client, machineId, userId, startTime, endTime 
 	}
 
 	log.Println("Successfully added item to table 'Machines'")
+}
+
+func GetAllMachines(svc *dynamodb.Client) (*[]constants.Machine, error) {
+	input := &dynamodb.ScanInput{
+		TableName: aws.String("MachineStates"),
+	}
+
+	result, err := svc.Scan(context.TODO(), input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan table: %w", err)
+	}
+
+	machines := []constants.Machine{}
+
+	for _, item := range result.Items {
+		machine := constants.Machine{}
+
+		if val, ok := item["machineId"].(*types.AttributeValueMemberS); ok {
+			machine.MachineID = val.Value
+		}
+		if val, ok := item["userID"].(*types.AttributeValueMemberS); ok {
+			machine.UserID = val.Value
+		}
+		if val, ok := item["startTime"].(*types.AttributeValueMemberS); ok {
+			startTime, err := time.Parse(time.RFC3339, val.Value)
+			if err != nil {
+				log.Printf("failed to parse startTime: %v", err)
+				continue
+			}
+			machine.StartTime = startTime
+		}
+		if val, ok := item["endTime"].(*types.AttributeValueMemberS); ok {
+			endTime, err := time.Parse(time.RFC3339, val.Value)
+			if err != nil {
+				log.Printf("failed to parse endTime: %v", err)
+				continue
+			}
+			machine.EndTime = endTime
+		}
+
+		machines = append(machines, machine)
+	}
+
+	return &machines, nil
 }
 
 func StartDynamoDB() {

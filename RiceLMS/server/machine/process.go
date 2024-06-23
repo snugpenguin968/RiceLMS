@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"server/constants"
 	"server/repository"
 	"time"
 
@@ -41,7 +42,7 @@ func StartMachineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decode the incoming JSON request body into the MachineInput struct
-	var input Machine
+	var input constants.Machine
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
@@ -62,21 +63,33 @@ func StartMachineHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (db *DynamoDBService) StartMachineHandlera(machine Machine) {
+func (db *DynamoDBService) StartMachineHandlera(machine constants.Machine) {
 	startTimeStr := machine.StartTime.Format(time.RFC3339)
 	endTimeStr := machine.EndTime.Format(time.RFC3339)
 	repository.AddMachineData(dbService.svc, machine.MachineID, machine.UserID, startTimeStr, endTimeStr)
 }
 
 func RetrieveDataHandler(w http.ResponseWriter, r *http.Request) {
-	// Example usage of DynamoDB client (db.svc)
-	// Here you can perform operations to retrieve data from DynamoDB using db.svc
+	machines, err := dbService.RetrieveDataHandler()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	// Simulating some data to be returned
-	data := map[string]string{
-		"message": "This is some data retrieved from the server.",
+	activeMachines := []constants.Machine{}
+	currentTime := time.Now()
+
+	for _, machine := range *machines {
+		if currentTime.Before(machine.EndTime) || currentTime.Equal(machine.EndTime) {
+			activeMachines = append(activeMachines, machine)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	json.NewEncoder(w).Encode(activeMachines)
+
+}
+
+func (db *DynamoDBService) RetrieveDataHandler() (*[]constants.Machine, error) {
+	return repository.GetAllMachines(dbService.svc)
 }
