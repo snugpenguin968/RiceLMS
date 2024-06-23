@@ -15,6 +15,9 @@ func main() {
 	repository.InitializeConnection()
 	auth.InitializeKey()
 
+	//repository.StartDynamoDB()
+	machine.InitializeDynamoDB()
+
 	router := mux.NewRouter()
 	router.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 	router.HandleFunc("/refresh", auth.RefreshHandler).Methods("POST")

@@ -3,10 +3,10 @@ package machine
 import "time"
 
 type Machine struct {
-	MachineID string    `firestore:"machineID"`
-	UserID    string    `firestore:"userID"`
-	StartTime time.Time `firestore:"startTime"`
-	EndTime   time.Time `firestore:"endTime"`
+	MachineID string
+	UserID    string
+	StartTime time.Time
+	EndTime   time.Time
 }
 
 func StartMachine(machineID, userID string) *Machine {

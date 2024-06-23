@@ -1,21 +1,36 @@
 package machine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"server/repository"
+	"time"
+
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-var washers []Machine
-var dryers []Machine
-var usedWashers []Machine
-var usedDryers []Machine
+// DynamoDBService encapsulates the DynamoDB client and provides methods to interact with DynamoDB
+type DynamoDBService struct {
+	svc *dynamodb.Client
+}
 
-func InitializeMachines() {
-	for i := 1; i <= 12; i++ {
-		washers = append(washers, Machine{MachineID: fmt.Sprintf("Washer%d", i)})
-		dryers = append(dryers, Machine{MachineID: fmt.Sprintf("dryer%d", i)})
+var dbService *DynamoDBService // Global instance of DynamoDBService
+
+// InitializeDynamoDB initializes the DynamoDB service
+func InitializeDynamoDB() error {
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-1"))
+	if err != nil {
+		return fmt.Errorf("unable to load SDK config: %w", err)
 	}
+
+	dbService = &DynamoDBService{
+		svc: dynamodb.NewFromConfig(cfg),
+	}
+
+	return nil
 }
 
 func StartMachineHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,9 +57,21 @@ func StartMachineHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string]string{"status": "success"}
 	json.NewEncoder(w).Encode(response)
+
+	dbService.StartMachineHandlera(input)
+
+}
+
+func (db *DynamoDBService) StartMachineHandlera(machine Machine) {
+	startTimeStr := machine.StartTime.Format(time.RFC3339)
+	endTimeStr := machine.EndTime.Format(time.RFC3339)
+	repository.AddMachineData(dbService.svc, machine.MachineID, machine.UserID, startTimeStr, endTimeStr)
 }
 
 func RetrieveDataHandler(w http.ResponseWriter, r *http.Request) {
+	// Example usage of DynamoDB client (db.svc)
+	// Here you can perform operations to retrieve data from DynamoDB using db.svc
+
 	// Simulating some data to be returned
 	data := map[string]string{
 		"message": "This is some data retrieved from the server.",
