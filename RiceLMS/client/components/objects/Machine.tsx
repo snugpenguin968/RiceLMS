@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet,TextInput } from 'react-native';
+import {useAuth} from './AuthContext'
+import axios from 'axios'
+import * as SecureStore from 'expo-secure-store';
 
 interface CustomMachineProps {
     title: string;
@@ -11,16 +14,61 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
   const [countdown, setCountdown] = useState(0);
   const [countdownActive, setCountdownActive] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout>();
-  const handleSubmit = () => {
+  const {username}=useAuth();
+
+  const handleSubmit = async () => {
     const isValidInteger = /^\d+$/.test(time);
     if (!isValidInteger){
       alert("Please enter a valid minute time")
     }
     else{
+      /*
       const enteredTime = parseInt(time, 10); // Convert input to an integer
       setCountdown(enteredTime * 60); // Convert minutes to seconds
       setCountdownActive(true);
-      setTime(''); // Clear input field
+      setTime(''); // Clear input field*/
+
+       // Record the current time as the start time
+      const token = await SecureStore.getItemAsync('refreshToken');
+      if (!token) {
+        alert('Authentication token is missing');
+        return;
+      }
+      const startTime = new Date();
+      
+      // Calculate the end time by adding the duration to the start time
+      const endTime = new Date(startTime.getTime() + parseInt(time,10) * 60000); // duration is in minutes, convert to milliseconds
+
+      // Format the startTime and endTime to RFC3339 format
+      const formattedStartTime = startTime.toISOString();  // This is the RFC3339 format
+      const formattedEndTime = endTime.toISOString();  // This is the RFC3339 format
+
+        // Prepare the payload
+      const payload = {
+        machineID:title,
+        userID:username,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime
+      };
+
+      try {
+        // Send the POST request to /startMachine
+        const response = await axios.post('https://mongrel-allowing-neatly.ngrok-free.app/startMachine', payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${token}`,
+          },
+        });
+        if (response.status === 200) {
+          alert('Machine started successfully!');
+        } else {
+          alert('Failed to start machine');
+        }
+      } catch (error) {
+        console.error('Failed to start machine:', error);
+        alert('Failed to start machine');
+      }
+
     }
   };
   const toggleMachine = () => {

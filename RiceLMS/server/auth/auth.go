@@ -2,7 +2,6 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -45,7 +44,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isAuthorized, err := repository.CheckCredentials(creds.Username, creds.Password)
-	fmt.Println(err)
 	//issue has to deal with err
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
