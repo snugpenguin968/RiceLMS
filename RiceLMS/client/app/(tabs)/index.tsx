@@ -16,6 +16,8 @@ const Tab: React.FC = () => {
         const activeMachine = activeMachines.find(m => m.MachineID === machine.title);
         return activeMachine || { MachineID: machine.title, UserID:username , StartTime: '', EndTime: '' }; // Default state for inactive machines
       });
+      console.log(activeMachines)
+      console.log(username)
       setActiveMachines(allMachinesData)
       
     } catch (error) {

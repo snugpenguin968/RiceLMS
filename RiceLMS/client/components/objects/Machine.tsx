@@ -4,7 +4,7 @@ import {useAuth} from './AuthContext'
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import CountdownTimer from './CountdownTimer';
-import { fetchActiveMachines, computeRemainingTime, Machine as MachineType } from './MachineServices';
+import {computeRemainingTime, Machine as MachineType } from './MachineServices';
 
 interface CustomMachineProps {
   title: string;
@@ -130,22 +130,24 @@ const Machine: React.FC<CustomMachineProps> = ({ title, machineData }) => {
       </View>
       ):(<View>
         {countdown === 0 ? (
-          <View>
-            <Text style={styles.countdownText}>
+        <View>
+          <Text style={styles.countdownText}>
             {0}:{0}{0}
-            </Text>
+          </Text>
           <TouchableOpacity onPress={handleUndo} style={styles.completeButton}>
             <Text style={styles.completeButtonText}>Complete</Text>
           </TouchableOpacity>
-          </View>
-        ) : (
-          <View>
-            <CountdownTimer countdown={countdown}></CountdownTimer>
+        </View>
+      ) : (
+        <View>
+          <CountdownTimer countdown={countdown}></CountdownTimer>
+          {machineData.UserID === username && ( // Only show the undo button if the user started the machine
             <TouchableOpacity onPress={handleUndo} style={styles.undoButton}>
               <Text style={styles.undoButtonText}>Undo</Text>
             </TouchableOpacity>
-          </View>
-        )}
+          )}
+        </View>
+      )}
       </View>
     )}
   </View>
