@@ -134,25 +134,31 @@ const Machine: React.FC<CustomMachineProps> = ({ title, machineData }) => {
           <Text style={styles.countdownText}>
             {0}:{0}{0}
           </Text>
-          <TouchableOpacity onPress={handleUndo} style={styles.completeButton}>
-            <Text style={styles.completeButtonText}>Complete</Text>
-          </TouchableOpacity>
+          {machineData.UserID === username ? (
+            <TouchableOpacity onPress={handleUndo} style={styles.completeButton}>
+              <Text style={styles.completeButtonText}>Complete</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.moveButton}>
+              <Text style={styles.moveButtonText}>Move</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <View>
           <CountdownTimer countdown={countdown}></CountdownTimer>
-          {machineData.UserID === username && ( // Only show the undo button if the user started the machine
+          {machineData.UserID === username && (
             <TouchableOpacity onPress={handleUndo} style={styles.undoButton}>
               <Text style={styles.undoButtonText}>Undo</Text>
             </TouchableOpacity>
           )}
         </View>
       )}
+        </View>
+      )}
       </View>
     )}
   </View>
-      )}
-    </View>
   );
 };
 
@@ -220,6 +226,17 @@ const styles = StyleSheet.create({
   },
   completeButtonText: {
     color: 'white',
+    fontWeight: 'bold',
+  },
+  moveButton: {
+    marginTop: 10,
+    backgroundColor: 'yellow',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  moveButtonText: {
+    color: 'black',
     fontWeight: 'bold',
   },
 });
