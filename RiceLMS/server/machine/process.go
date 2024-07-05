@@ -82,6 +82,12 @@ func RetrieveDataHandler(w http.ResponseWriter, r *http.Request) {
 	for _, machine := range *machines {
 		if currentTime.Before(machine.EndTime) || currentTime.Equal(machine.EndTime) {
 			activeMachines = append(activeMachines, machine)
+		} else {
+			// Delete the machine from the database since it's inactive
+			err := repository.DeleteMachine(dbService.svc, machine.MachineID, machine.StartTime.Format(time.RFC3339))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 		}
 	}
 

@@ -3,12 +3,15 @@ import { View, Text, TouchableOpacity, StyleSheet,TextInput } from 'react-native
 import {useAuth} from './AuthContext'
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
+import CountdownTimer from './CountdownTimer';
+import { fetchActiveMachines, computeRemainingTime, Machine as MachineType } from './MachineServices';
 
 interface CustomMachineProps {
-    title: string;
+  title: string;
+  machineData: MachineType;
 }
 
-const Machine: React.FC<CustomMachineProps> = ({title}) => {
+const Machine: React.FC<CustomMachineProps> = ({ title, machineData }) => {
   const [expanded, setExpanded] = useState(false);
   const [time, setTime] = useState('');
   const [countdown, setCountdown] = useState(0);
@@ -16,17 +19,23 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
   const intervalRef = useRef<NodeJS.Timeout>();
   const {username}=useAuth();
 
+  useEffect(() => {
+    if (machineData && machineData.EndTime) {
+      const remainingTime = computeRemainingTime(machineData.EndTime);
+      if (remainingTime > 0) {
+        setCountdown(remainingTime);
+        setCountdownActive(true);
+      }
+    }
+  }, [machineData]);
+
+
   const handleSubmit = async () => {
     const isValidInteger = /^\d+$/.test(time);
     if (!isValidInteger){
       alert("Please enter a valid minute time")
     }
     else{
-      /*
-      const enteredTime = parseInt(time, 10); // Convert input to an integer
-      setCountdown(enteredTime * 60); // Convert minutes to seconds
-      setCountdownActive(true);
-      setTime(''); // Clear input field*/
 
        // Record the current time as the start time
       const token = await SecureStore.getItemAsync('refreshToken');
@@ -59,18 +68,20 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
             'Authorization': `${token}`,
           },
         });
-        if (response.status === 200) {
-          alert('Machine started successfully!');
-        } else {
-          alert('Failed to start machine');
-        }
       } catch (error) {
         console.error('Failed to start machine:', error);
         alert('Failed to start machine');
       }
+      const enteredTime = parseInt(time, 10); // Convert input to an integer
+      setCountdown(enteredTime * 60); // Convert minutes to seconds
+      setCountdownActive(true);
+      setTime(''); // Clear input field*/
 
     }
   };
+
+
+
   const toggleMachine = () => {
     setExpanded(!expanded);
   };
@@ -129,10 +140,7 @@ const Machine: React.FC<CustomMachineProps> = ({title}) => {
           </View>
         ) : (
           <View>
-            <Text style={styles.countdownText}>
-              {Math.floor(countdown / 60)}:{countdown % 60 < 10 ? '0' : ''}
-              {countdown % 60}
-            </Text>
+            <CountdownTimer countdown={countdown}></CountdownTimer>
             <TouchableOpacity onPress={handleUndo} style={styles.undoButton}>
               <Text style={styles.undoButtonText}>Undo</Text>
             </TouchableOpacity>

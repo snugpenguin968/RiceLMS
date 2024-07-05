@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { View, Button, Modal, Text,StyleSheet } from 'react-native';
 import { useAuth, AuthProvider } from '../components/objects/AuthContext';
 import LoginScreen from './LoginScreen';
+import { fetchActiveMachines } from '@/components/objects/MachineServices';
 
 const AuthScreens = () => (
   <View style={styles.container}>
