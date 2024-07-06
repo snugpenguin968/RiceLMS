@@ -124,7 +124,7 @@ func GetAllMachines(svc *dynamodb.Client) (*[]constants.Machine, error) {
 	return &machines, nil
 }
 
-func DeleteMachine(svc *dynamodb.Client, machineId, startTime string) error {
+func DeleteMachine(svc *dynamodb.Client, machineId string, startTime string) error {
 	input := &dynamodb.DeleteItemInput{
 		TableName: aws.String("MachineStates"),
 		Key: map[string]types.AttributeValue{
@@ -135,11 +135,57 @@ func DeleteMachine(svc *dynamodb.Client, machineId, startTime string) error {
 
 	_, err := svc.DeleteItem(context.TODO(), input)
 	if err != nil {
-		log.Fatalf("failed to delete item: %v", err)
+		log.Printf("Failed to delete item: %v", err)
 		return err
 	}
 
-	log.Printf("Successfully deleted machine %s with startTime %s", machineId, startTime)
+	log.Printf("Successfully deleted machine %s with start time %s", machineId, startTime)
+	return nil
+}
+
+func ListAllItems(svc *dynamodb.Client, tableName string) ([]map[string]types.AttributeValue, error) {
+	var items []map[string]types.AttributeValue
+	input := &dynamodb.ScanInput{
+		TableName: aws.String(tableName),
+	}
+
+	result, err := svc.Scan(context.TODO(), input)
+	if err != nil {
+		return nil, err
+	}
+
+	items = append(items, result.Items...)
+	fmt.Println(items)
+	return items, nil
+}
+
+func DeleteAllItems(svc *dynamodb.Client, tableName string) error {
+	items, err := ListAllItems(svc, tableName)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range items {
+		machineId := item["machineId"].(*types.AttributeValueMemberS).Value
+		startTime := item["startTime"].(*types.AttributeValueMemberS).Value
+
+		input := &dynamodb.DeleteItemInput{
+			TableName: aws.String(tableName),
+			Key: map[string]types.AttributeValue{
+				"machineId": &types.AttributeValueMemberS{Value: machineId},
+				"startTime": &types.AttributeValueMemberS{Value: startTime},
+			},
+		}
+
+		_, err := svc.DeleteItem(context.TODO(), input)
+		if err != nil {
+			log.Printf("Failed to delete item with machineId: %s, startTime: %s, error: %v", machineId, startTime, err)
+			return err
+		}
+
+		log.Printf("Successfully deleted item with machineId: %s, startTime: %s", machineId, startTime)
+	}
+
 	return nil
 }
 

@@ -22,10 +22,8 @@ const Machine: React.FC<CustomMachineProps> = ({ title, machineData }) => {
   useEffect(() => {
     if (machineData && machineData.EndTime) {
       const remainingTime = computeRemainingTime(machineData.EndTime);
-      if (remainingTime > 0) {
-        setCountdown(remainingTime);
-        setCountdownActive(true);
-      }
+      setCountdown(Math.max(remainingTime, 0));  // Ensure countdown is never negative
+      setCountdownActive(true);
     }
   }, [machineData]);
 
@@ -77,6 +75,32 @@ const Machine: React.FC<CustomMachineProps> = ({ title, machineData }) => {
       setCountdownActive(true);
       setTime(''); // Clear input field*/
 
+    }
+  };
+
+  const handleComplete = async () => {
+    handleUndo()
+    const token = await SecureStore.getItemAsync('refreshToken');
+    if (!token) {
+      alert('Authentication token is missing');
+      return;
+    }
+    
+    const payload = {
+      machineID: title,
+      startTime: machineData.StartTime,
+    };
+
+    try {
+      await axios.post('https://mongrel-allowing-neatly.ngrok-free.app/deleteMachine', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `${token}`,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to delete machine:', error);
+      alert('Failed to delete machine');
     }
   };
 
@@ -135,7 +159,7 @@ const Machine: React.FC<CustomMachineProps> = ({ title, machineData }) => {
             {0}:{0}{0}
           </Text>
           {machineData.UserID === username ? (
-            <TouchableOpacity onPress={handleUndo} style={styles.completeButton}>
+            <TouchableOpacity onPress={handleComplete} style={styles.completeButton}>
               <Text style={styles.completeButtonText}>Complete</Text>
             </TouchableOpacity>
           ) : (

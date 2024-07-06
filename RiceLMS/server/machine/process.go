@@ -40,6 +40,7 @@ func StartMachineHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	repository.DeleteAllItems(dbService.svc, "Machines")
 
 	// Decode the incoming JSON request body into the MachineInput struct
 	var input constants.Machine
@@ -76,24 +77,37 @@ func RetrieveDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	activeMachines := []constants.Machine{}
-	currentTime := time.Now()
+	/*
+		activeMachines := []constants.Machine{}
+		currentTime := time.Now()
 
-	for _, machine := range *machines {
-		if currentTime.Before(machine.EndTime) || currentTime.Equal(machine.EndTime) {
-			activeMachines = append(activeMachines, machine)
-		} else {
-			// Delete the machine from the database since it's inactive
-			err := repository.DeleteMachine(dbService.svc, machine.MachineID, machine.StartTime.Format(time.RFC3339))
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+		for _, machine := range *machines {
+			if currentTime.Before(machine.EndTime) || currentTime.Equal(machine.EndTime) {
+				activeMachines = append(activeMachines, machine)
 			}
-		}
-	}
+		}*/
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(activeMachines)
+	//json.NewEncoder(w).Encode(activeMachines)
+	json.NewEncoder(w).Encode(machines)
 
+}
+
+func DeleteMachineHandler(w http.ResponseWriter, r *http.Request) {
+	var machine constants.Machine
+	err := json.NewDecoder(r.Body).Decode(&machine)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = repository.DeleteMachine(dbService.svc, machine.MachineID, machine.StartTime.Format(time.RFC3339))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (db *DynamoDBService) RetrieveDataHandler() (*[]constants.Machine, error) {

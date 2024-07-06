@@ -24,6 +24,7 @@ func main() {
 	router.HandleFunc("/register", auth.RegisterHandler).Methods("POST")
 	router.HandleFunc("/retrieveData", auth.Adapt(auth.AuthMiddleware(http.HandlerFunc(machine.RetrieveDataHandler)))).Methods("GET")
 	router.HandleFunc("/startMachine", machine.StartMachineHandler).Methods("POST")
+	router.HandleFunc("/deleteMachine", machine.DeleteMachineHandler).Methods("POST")
 	// Apply CORS middleware
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"}, // allows all origins
