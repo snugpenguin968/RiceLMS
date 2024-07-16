@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"server/constants"
+	"server/notifications"
 	"server/repository"
 	"time"
 
@@ -19,6 +20,7 @@ type DynamoDBService struct {
 }
 
 var dbService *DynamoDBService // Global instance of DynamoDBService
+var activeMachines *notifications.Deque
 
 // InitializeDynamoDB initializes the DynamoDB service
 func InitializeDynamoDB() error {
@@ -31,6 +33,9 @@ func InitializeDynamoDB() error {
 		svc: dynamodb.NewFromConfig(cfg),
 	}
 
+	activeMachines = notifications.InitializeNotificationService()
+	go notifications.TrackNotifications()
+
 	return nil
 }
 
@@ -40,7 +45,6 @@ func StartMachineHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	repository.DeleteAllItems(dbService.svc, "Machines")
 
 	// Decode the incoming JSON request body into the MachineInput struct
 	var input constants.Machine
@@ -50,6 +54,8 @@ func StartMachineHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	activeMachines.Append(input)
 
 	// Log the received input (for demonstration purposes)
 	fmt.Printf("Received Machine Input: %+v\n", input)

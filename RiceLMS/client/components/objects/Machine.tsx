@@ -172,7 +172,7 @@ const Machine: React.FC<CustomMachineProps> = ({ title, machineData }) => {
         <View>
           <CountdownTimer countdown={countdown}></CountdownTimer>
           {machineData.UserID === username && (
-            <TouchableOpacity onPress={handleUndo} style={styles.undoButton}>
+            <TouchableOpacity onPress={handleComplete} style={styles.undoButton}>
               <Text style={styles.undoButtonText}>Undo</Text>
             </TouchableOpacity>
           )}

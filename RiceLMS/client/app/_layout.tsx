@@ -1,9 +1,11 @@
 import React from 'react'
 import { Stack } from 'expo-router';
-import { View, Button, Modal, Text,StyleSheet } from 'react-native';
+import { View, Text,StyleSheet } from 'react-native';
 import { useAuth, AuthProvider } from '../components/objects/AuthContext';
 import LoginScreen from './LoginScreen';
-import { fetchActiveMachines } from '@/components/objects/MachineServices';
+
+import NotificationService from '@/components/objects/NotificationService';
+
 
 const AuthScreens = () => (
   <View style={styles.container}>
@@ -17,9 +19,12 @@ const AuthScreens = () => (
 );
 
 const AppContent = () => (
+  <>
+  <NotificationService />
   <Stack>
-    <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
+    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
   </Stack>
+</>
 );
 
 const AppLayout = () => {

@@ -26,8 +26,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUsername(user);
       }
     };
-
     checkLoginStatus();
+    console.log(username)
   }, []);
 
   const saveToken = async(token:string, refreshToken: string, user:string)=>{
