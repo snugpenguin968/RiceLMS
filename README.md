@@ -1,7 +1,5 @@
-# RiceLMS
+# Rice Laundry Management System
 
-note to self: run
-
-```sh
-ngrok http --domain=mongrel-allowing-neatly.ngrok-free.app 8000
-```
+Reimagined version of that failed hackathon project:
+- React Native mobile app written in Typescript utilizing the Expo Go framework
+- Go backend utilizing PostgreSQL for authentication and AWS DynamoDB for state persistence 
