@@ -24,6 +24,7 @@ func main() {
 	router.HandleFunc("/refresh", auth.RefreshHandler).Methods("POST")
 	router.HandleFunc("/register", auth.RegisterHandler).Methods("POST")
 	router.HandleFunc("/registerNotification", notifications.RegisterTokenHandler).Methods("POST")
+	router.HandleFunc("/getUserToken", notifications.GetUserTokenHandler).Methods("POST", "GET")
 	router.HandleFunc("/retrieveData", auth.Adapt(auth.AuthMiddleware(http.HandlerFunc(machine.RetrieveDataHandler)))).Methods("GET")
 	router.HandleFunc("/startMachine", machine.StartMachineHandler).Methods("POST")
 	router.HandleFunc("/deleteMachine", machine.DeleteMachineHandler).Methods("POST")

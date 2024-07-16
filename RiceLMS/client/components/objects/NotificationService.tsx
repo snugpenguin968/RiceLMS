@@ -88,5 +88,39 @@ async function registerForPushNotificationsAsync() {
       }
 }
 
+const sendNotificationToUser = async (userId:string|null) => {
+  try {
+    // Query the backend to get the token
+    console.log(userId)
+    const response = await axios.post('https://mongrel-allowing-neatly.ngrok-free.app/getUserToken', { UserID: userId }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const token = response.data.token;
+    if (token) {
+      // Send notification using the token
+      const message = {
+        to: token,
+        title: 'Notification',
+        body: 'Clothes Moved!',
+      };
+
+      await axios.post('https://exp.host/--/api/v2/push/send', message, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Notification sent successfully');
+    } else {
+      console.error('No token found for the user');
+    }
+  } catch (error) {
+    console.error('Error sending notification:', error);
+  }
+};
 
 export default NotificationService;
+export {sendNotificationToUser}

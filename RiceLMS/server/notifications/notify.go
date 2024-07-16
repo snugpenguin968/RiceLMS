@@ -21,6 +21,14 @@ type TokenRequest struct {
 	UserID string
 }
 
+type UserToTokenRequest struct {
+	UserID string
+}
+
+type TokenResponse struct {
+	Token string `json:"token"`
+}
+
 type ExpoPushMessage struct {
 	To    string `json:"to"`
 	Title string `json:"title"`
@@ -77,6 +85,28 @@ func RegisterTokenHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Received token for user:", tokenReq.UserID, tokenReq.Token)
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func GetUserTokenHandler(w http.ResponseWriter, r *http.Request) {
+	var tokenReq UserToTokenRequest
+	fmt.Println(r.Body)
+	err := json.NewDecoder(r.Body).Decode(&tokenReq)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	token, exists := userTokens.m[tokenReq.UserID]
+	if !exists {
+		http.Error(w, "Token not found", http.StatusNotFound)
+		return
+	}
+
+	response := TokenResponse{Token: token}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
 }
 
 func sendNotification(completedMachine constants.Machine) error {

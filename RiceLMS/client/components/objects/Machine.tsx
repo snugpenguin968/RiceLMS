@@ -5,6 +5,7 @@ import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import CountdownTimer from './CountdownTimer';
 import {computeRemainingTime, Machine as MachineType } from './MachineServices';
+import { sendNotificationToUser } from './NotificationService';
 
 interface CustomMachineProps {
   title: string;
@@ -163,9 +164,12 @@ const Machine: React.FC<CustomMachineProps> = ({ title, machineData }) => {
               <Text style={styles.completeButtonText}>Complete</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.moveButton}>
-              <Text style={styles.moveButtonText}>Move</Text>
-            </TouchableOpacity>
+            <TouchableOpacity
+            style={styles.moveButton}
+            onPress={() => sendNotificationToUser(machineData.UserID)}
+          >
+            <Text style={styles.moveButtonText}>Move</Text>
+          </TouchableOpacity>
           )}
         </View>
       ) : (
