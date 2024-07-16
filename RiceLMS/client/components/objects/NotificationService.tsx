@@ -91,7 +91,6 @@ async function registerForPushNotificationsAsync() {
 const sendNotificationToUser = async (userId:string|null) => {
   try {
     // Query the backend to get the token
-    console.log(userId)
     const response = await axios.post('https://mongrel-allowing-neatly.ngrok-free.app/getUserToken', { UserID: userId }, {
       headers: {
         'Content-Type': 'application/json',

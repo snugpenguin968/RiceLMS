@@ -33,6 +33,8 @@ func InitializeDynamoDB() error {
 		svc: dynamodb.NewFromConfig(cfg),
 	}
 
+	repository.DeleteAllItems(dbService.svc, "MachineStates")
+
 	activeMachines = notifications.InitializeNotificationService()
 	go notifications.TrackNotifications()
 
@@ -82,6 +84,7 @@ func RetrieveDataHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	fmt.Println(machines)
 
 	/*
 		activeMachines := []constants.Machine{}
